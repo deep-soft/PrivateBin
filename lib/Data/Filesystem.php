@@ -7,12 +7,13 @@
  * @link      https://github.com/PrivateBin/PrivateBin
  * @copyright 2012 Sébastien SAUVAGE (sebsauvage.net)
  * @license   https://www.opensource.org/licenses/zlib-license.php The zlib/libpng License
- * @version   1.6.0
+ * @version   1.6.2
  */
 
 namespace PrivateBin\Data;
 
 use Exception;
+use GlobIterator;
 use PrivateBin\Json;
 
 /**
@@ -394,7 +395,7 @@ class Filesystem extends AbstractData
     public function getAllPastes()
     {
         $pastes = array();
-        foreach (new \GlobIterator($this->_path . self::PASTE_FILE_PATTERN) as $file) {
+        foreach (new GlobIterator($this->_path . self::PASTE_FILE_PATTERN) as $file) {
             if ($file->isFile()) {
                 $pastes[] = $file->getBasename('.php');
             }

@@ -6,7 +6,7 @@
  * @see       {@link https://github.com/PrivateBin/PrivateBin}
  * @copyright 2012 Sébastien SAUVAGE ({@link http://sebsauvage.net})
  * @license   {@link https://www.opensource.org/licenses/zlib-license.php The zlib/libpng License}
- * @version   1.6.0
+ * @version   1.6.2
  * @name      PrivateBin
  * @namespace
  */
@@ -80,7 +80,7 @@ jQuery.PrivateBin = (function($, RawDeflate) {
     /**
      * CryptoData class
      *
-     * bundles helper fuctions used in both paste and comment formats
+     * bundles helper functions used in both paste and comment formats
      *
      * @name CryptoData
      * @class
@@ -95,7 +95,7 @@ jQuery.PrivateBin = (function($, RawDeflate) {
         /**
          * gets the cipher data (cipher text + adata)
          *
-         * @name Paste.getCipherData
+         * @name CryptoData.getCipherData
          * @function
          * @return {Array}|{string}
          */
@@ -108,7 +108,7 @@ jQuery.PrivateBin = (function($, RawDeflate) {
     /**
      * Paste class
      *
-     * bundles helper fuctions around the paste formats
+     * bundles helper functions around the paste formats
      *
      * @name Paste
      * @class
@@ -171,7 +171,7 @@ jQuery.PrivateBin = (function($, RawDeflate) {
     /**
      * Comment class
      *
-     * bundles helper fuctions around the comment formats
+     * bundles helper functions around the comment formats
      *
      * @name Comment
      * @class
@@ -183,7 +183,7 @@ jQuery.PrivateBin = (function($, RawDeflate) {
         /**
          * gets the UNIX timestamp of the comment creation
          *
-         * @name Paste.getCreated
+         * @name Comment.getCreated
          * @function
          * @return {int}
          */
@@ -195,7 +195,7 @@ jQuery.PrivateBin = (function($, RawDeflate) {
         /**
          * gets the icon of the comment submitter
          *
-         * @name Paste.getIcon
+         * @name Comment.getIcon
          * @function
          * @return {string}
          */

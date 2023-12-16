@@ -1,7 +1,7 @@
 .PHONY: all coverage coverage-js coverage-php doc doc-js doc-php increment sign test test-js test-php help
 
-CURRENT_VERSION = 1.6.0
-VERSION ?= 1.6.1
+CURRENT_VERSION = 1.6.2
+VERSION ?= 1.6.3
 VERSION_FILES = index.php bin/ cfg/ *.md doc/Installation.md css/ i18n/ img/ js/package.json js/privatebin.js lib/ Makefile tpl/ tst/
 REGEX_CURRENT_VERSION := $(shell echo $(CURRENT_VERSION) | sed "s/\./\\\./g")
 REGEX_VERSION := $(shell echo $(VERSION) | sed "s/\./\\\./g")
@@ -18,7 +18,7 @@ coverage-js: ## Run JS unit tests and generate code coverage reports.
 
 coverage-php: ## Run PHP unit tests and generate code coverage reports.
 	cd tst && phpunit 2> /dev/null
-	cd tst/log/php-coverage-report && sed -i "s#$(CURDIR)##g" *.html */*.html
+	cd tst/log/php-coverage-report && sed -i "s#$(CURDIR)/##g" *.html */*.html
 
 doc: doc-js doc-php ## Generate all code documentation.
 
@@ -26,7 +26,7 @@ doc-js: ## Generate JS code documentation.
 	jsdoc -p -d doc/jsdoc js/privatebin.js js/legacy.js
 
 doc-php: ## Generate JS code documentation.
-	phpdoc --visibility public,protected,private -t doc/phpdoc -d lib/
+	phpdoc --visibility=public,protected,private --target=doc/phpdoc --directory=lib/
 
 increment: ## Increment and commit new version number, set target version using `make increment VERSION=1.2.3`.
 	for F in `grep -l -R $(REGEX_CURRENT_VERSION) $(VERSION_FILES) | grep -v -e tst/log/ -e ":0" -e CHANGELOG.md`; \
