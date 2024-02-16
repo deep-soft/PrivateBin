@@ -1,7 +1,7 @@
 .PHONY: all coverage coverage-js coverage-php doc doc-js doc-php increment sign test test-js test-php help
 
-CURRENT_VERSION = 1.6.2
-VERSION ?= 1.6.3
+CURRENT_VERSION = 1.7.1
+VERSION ?= 1.7.2
 VERSION_FILES = index.php bin/ cfg/ *.md doc/Installation.md css/ i18n/ img/ js/package.json js/privatebin.js lib/ Makefile tpl/ tst/
 REGEX_CURRENT_VERSION := $(shell echo $(CURRENT_VERSION) | sed "s/\./\\\./g")
 REGEX_VERSION := $(shell echo $(VERSION) | sed "s/\./\\\./g")
@@ -17,7 +17,7 @@ coverage-js: ## Run JS unit tests and generate code coverage reports.
 	cd js && nyc mocha
 
 coverage-php: ## Run PHP unit tests and generate code coverage reports.
-	cd tst && phpunit 2> /dev/null
+	cd tst && XDEBUG_MODE=coverage phpunit 2> /dev/null
 	cd tst/log/php-coverage-report && sed -i "s#$(CURDIR)/##g" *.html */*.html
 
 doc: doc-js doc-php ## Generate all code documentation.
