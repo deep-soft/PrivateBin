@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * PrivateBin
  *
@@ -7,7 +7,6 @@
  * @link      https://github.com/PrivateBin/PrivateBin
  * @copyright 2012 Sébastien SAUVAGE (sebsauvage.net)
  * @license   https://www.opensource.org/licenses/zlib-license.php The zlib/libpng License
- * @version   1.7.1
  */
 
 namespace PrivateBin;
@@ -50,7 +49,7 @@ class View
      */
     public function draw($template)
     {
-        $file = substr($template, 0, 9) === 'bootstrap' ? 'bootstrap' : $template;
+        $file = substr($template, 0, 10) === 'bootstrap-' ? 'bootstrap' : $template;
         $path = PATH . 'tpl' . DIRECTORY_SEPARATOR . $file . '.php';
         if (!file_exists($path)) {
             throw new Exception('Template ' . $template . ' not found!', 80);

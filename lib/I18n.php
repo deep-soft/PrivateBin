@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * PrivateBin
  *
@@ -7,7 +7,6 @@
  * @link      https://github.com/PrivateBin/PrivateBin
  * @copyright 2012 Sébastien SAUVAGE (sebsauvage.net)
  * @license   https://www.opensource.org/licenses/zlib-license.php The zlib/libpng License
- * @version   1.7.1
  */
 
 namespace PrivateBin;
@@ -81,11 +80,11 @@ class I18n
      *
      * @access public
      * @static
-     * @param  string $messageId
+     * @param  string|array $messageId
      * @param  mixed $args one or multiple parameters injected into placeholders
      * @return string
      */
-    public static function _($messageId)
+    public static function _($messageId, ...$args)
     {
         return forward_static_call_array('PrivateBin\I18n::translate', func_get_args());
     }
@@ -95,16 +94,16 @@ class I18n
      *
      * @access public
      * @static
-     * @param  string $messageId
+     * @param  string|array $messageId
      * @param  mixed $args one or multiple parameters injected into placeholders
      * @return string
      */
-    public static function translate($messageId)
+    public static function translate($messageId, ...$args)
     {
         if (empty($messageId)) {
             return $messageId;
         }
-        if (count(self::$_translations) === 0) {
+        if (empty(self::$_translations)) {
             self::loadTranslations();
         }
         $messages = $messageId;
@@ -114,7 +113,7 @@ class I18n
         if (!array_key_exists($messageId, self::$_translations)) {
             self::$_translations[$messageId] = $messages;
         }
-        $args = func_get_args();
+        array_unshift($args, $messageId);
         if (is_array(self::$_translations[$messageId])) {
             $number = (int) $args[1];
             $key    = self::_getPluralForm($number);
@@ -130,11 +129,9 @@ class I18n
         }
         // encode any non-integer arguments and the message ID, if it doesn't contain a link
         $argsCount = count($args);
-        if ($argsCount > 1) {
-            for ($i = 0; $i < $argsCount; ++$i) {
-                if (($i > 0 && !is_int($args[$i])) || strpos($args[0], '<a') === false) {
-                    $args[$i] = self::encode($args[$i]);
-                }
+        for ($i = 0; $i < $argsCount; ++$i) {
+            if ($i > 0 ? !is_int($args[$i]) : strpos($args[0], '<a') === false) {
+                $args[$i] = self::encode($args[$i]);
             }
         }
         return call_user_func_array('sprintf', $args);

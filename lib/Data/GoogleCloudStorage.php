@@ -1,4 +1,13 @@
-<?php
+<?php declare(strict_types=1);
+/**
+ * PrivateBin
+ *
+ * a zero-knowledge paste bin
+ *
+ * @link      https://github.com/PrivateBin/PrivateBin
+ * @copyright 2012 Sébastien SAUVAGE (sebsauvage.net)
+ * @license   https://www.opensource.org/licenses/zlib-license.php The zlib/libpng License
+ */
 
 namespace PrivateBin\Data;
 
@@ -47,7 +56,6 @@ class GoogleCloudStorage extends AbstractData
      *
      * @access public
      * @param array $options
-     * @return
      */
     public function __construct(array $options)
     {

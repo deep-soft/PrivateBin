@@ -1,7 +1,28 @@
 # PrivateBin version history
 
-## 1.7.2 (not yet released)
+## 1.7.4 (not yet released)
+* CHANGED: Saving markdown pastes uses `.md` extension instead of `.txt` (#1293)
+* CHANGED: Enable strict type checking in PHP (#1350)
+* FIXED: Reset password input field on creation of new paste (#1194)
+* FIXED: Allow database schema upgrade to skip versions (#1343)
+* FIXED: `bootstrap5` dark mode toggle unset on dark browser preference (#1340)
+
+## 1.7.3 (2024-05-13)
+* CHANGED: Various tweaks of the `bootstrap5` template, suggested by the community
+* CHANGED: Upgrading libraries to: DOMpurify 3.1.3
+* FIXED: Selected expiration not being applied, when using bootstrap template (#1309)
+
+## 1.7.2 (2024-05-05)
+* ADDED: Allow use of `shortenviayourls` in query parameters (#1267)
+* ADDED: Input sanitation to some not yet filtered query and server parameters
+* ADDED: Optional Bootstrap CSS 5.3.3 based template, use configuration `template = "bootstrap5"` to switch to it (#728)
 * CHANGED: "Send" button now labeled "Create" (#946)
+* CHANGED: Drop some PHP < 5.6 fallbacks, minimum version is PHP 7.3 as of release 1.6.0
+* CHANGED: Set `lang` cookie with lax `SameSite` property
+* CHANGED: Upgrading libraries to: DOMpurify 3.1.2 (#1299) & jQuery 3.7.1
+* CHANGED: `create` attribute is no longer returned in API for pastes & can be disabled for comments using `discussiondatedisplay` as well (#1290)
+* FIXED: Add cache control headers also to API calls (#1263)
+* FIXED: Shortened paste URL does not appear in email (#606)
 
 ## 1.7.1 (2024-02-11)
 * FIXED: zlib 1.3.1 wasm file reference
@@ -27,7 +48,7 @@
 
 ## 1.6.0 (2023-09-11)
 * ADDED: Translations for Japanese & Arabic
-* ADDED: Configuration option to disable Email button (#1164)
+* ADDED: Configuration option to disable email button (#1164)
 * CHANGED: Minimum required PHP version is 7.3, due to upgrading PHPunit (#707)
 * CHANGED: Removed PHP 5 polyfill for random_bytes()
 

@@ -6,7 +6,6 @@
  * @see       {@link https://github.com/PrivateBin/PrivateBin}
  * @copyright 2012 Sébastien SAUVAGE ({@link http://sebsauvage.net})
  * @license   {@link https://www.opensource.org/licenses/zlib-license.php The zlib/libpng License}
- * @version   1.7.1
  * @name      PrivateBin
  * @namespace
  */
@@ -196,7 +195,7 @@ jQuery.PrivateBin = (function($, RawDeflate) {
          */
         this.getCreated = function()
         {
-            return this.meta[this.v === 1 ? 'postdate' : 'created'];
+            return this.meta[this.v === 1 ? 'postdate' : 'created'] || 0;
         }
 
         /**
@@ -1068,7 +1067,7 @@ jQuery.PrivateBin = (function($, RawDeflate) {
             if (mode === 'zlib' || mode === 'none') {
                 if (mode === 'zlib') {
                     if (typeof zlib === 'undefined') {
-                        throw 'Error decompressing paste, due to missing WebAssembly support.'
+                        throw 'Error decompressing paste, your browser does not support WebAssembly. Please use another browser to view this paste.'
                     }
                     data = zlib.inflate(
                         new Uint8Array(data)
@@ -1305,7 +1304,7 @@ jQuery.PrivateBin = (function($, RawDeflate) {
             spec[1] = atob(spec[1]);
             if (spec[7] === 'zlib') {
                 if (typeof zlib === 'undefined') {
-                    throw 'Error decompressing paste, due to missing WebAssembly support.'
+                    throw 'Error decompressing paste, your browser does not support WebAssembly. Please use another browser to view this paste.'
                 }
             }
             try {
@@ -2282,7 +2281,7 @@ jQuery.PrivateBin = (function($, RawDeflate) {
                 $loadconfirmmodal.modal('show');
             } else {
                 if (window.confirm(
-                    I18n._('Burn after reading pastes can only be displayed once upon loading it. Do you want to open it now?')
+                    I18n._('This secret message can only be displayed once. Would you like to see it now?')
                 )) {
                     PasteDecrypter.run();
                 } else {
@@ -2305,6 +2304,7 @@ jQuery.PrivateBin = (function($, RawDeflate) {
                     backdrop: 'static',
                     keyboard: false
                 });
+                $passwordModal.modal('show');
                 // focus password input
                 $passwordDecrypt.focus();
                 // then re-focus it, when modal causes it to loose focus again
@@ -2390,7 +2390,9 @@ jQuery.PrivateBin = (function($, RawDeflate) {
 
         let $editorTabs,
             $messageEdit,
+            $messageEditParent,
             $messagePreview,
+            $messagePreviewParent,
             $message,
             isPreview = false;
 
@@ -2431,10 +2433,12 @@ jQuery.PrivateBin = (function($, RawDeflate) {
         {
             // toggle buttons
             $messageEdit.addClass('active');
+            $messageEditParent.addClass('active');
             $messagePreview.removeClass('active');
+            $messagePreviewParent.removeClass('active');
 
-            $('#messageedit').attr('aria-selected','true');
-            $('#messagepreview').attr('aria-selected','false');
+            $messageEdit.attr('aria-selected','true');
+            $messagePreview.attr('aria-selected','false');
 
             PasteViewer.hide();
 
@@ -2463,10 +2467,12 @@ jQuery.PrivateBin = (function($, RawDeflate) {
         {
             // toggle buttons
             $messageEdit.removeClass('active');
+            $messageEditParent.removeClass('active');
             $messagePreview.addClass('active');
+            $messagePreviewParent.addClass('active');
 
-            $('#messageedit').attr('aria-selected','false');
-            $('#messagepreview').attr('aria-selected','true');
+            $messageEdit.attr('aria-selected','false');
+            $messagePreview.attr('aria-selected','true');
 
             // hide input as now preview is shown
             $message.addClass('hidden');
@@ -2594,10 +2600,11 @@ jQuery.PrivateBin = (function($, RawDeflate) {
             // bind events
             $message.keydown(supportTabs);
 
-            // bind click events to tab switchers (a), but save parent of them
-            // (li)
-            $messageEdit = $('#messageedit').click(viewEditor).parent();
-            $messagePreview = $('#messagepreview').click(viewPreview).parent();
+            // bind click events to tab switchers (a), and save parents (li)
+            $messageEdit = $('#messageedit').click(viewEditor);
+            $messageEditParent = $messageEdit.parent();
+            $messagePreview = $('#messagepreview').click(viewPreview);
+            $messagePreviewParent = $messagePreview.parent();
         };
 
         return me;
@@ -2693,15 +2700,12 @@ jQuery.PrivateBin = (function($, RawDeflate) {
             // otherwise hide the placeholder
             $placeholder.addClass('hidden');
 
-            switch (format) {
-                case 'markdown':
-                    $plainText.removeClass('hidden');
-                    $prettyMessage.addClass('hidden');
-                    break;
-                default:
-                    $plainText.addClass('hidden');
-                    $prettyMessage.removeClass('hidden');
-                    break;
+            if (format === 'markdown') {
+                $plainText.removeClass('hidden');
+                $prettyMessage.addClass('hidden');
+            } else {
+                $plainText.addClass('hidden');
+                $prettyMessage.removeClass('hidden');
             }
         }
 
@@ -2726,6 +2730,11 @@ jQuery.PrivateBin = (function($, RawDeflate) {
 
             format = newFormat;
             isChanged = true;
+
+            // update preview
+            if (Editor.isPreview()) {
+                PasteViewer.run();
+            }
         };
 
         /**
@@ -3484,9 +3493,11 @@ jQuery.PrivateBin = (function($, RawDeflate) {
             }
 
             // set date
+            const created = comment.getCreated();
+            const commentDate = created == 0 ? '' : ' (' + (new Date(created * 1000).toLocaleString()) + ')';
             $commentEntry.find('span.commentdate')
-                      .text(' (' + (new Date(comment.getCreated() * 1000).toLocaleString()) + ')')
-                      .attr('title', 'CommentID: ' + comment.id);
+                         .text(commentDate)
+                         .attr('title', 'CommentID: ' + comment.id);
 
             // if an avatar is available, display it
             const icon = comment.getIcon();
@@ -3712,11 +3723,6 @@ jQuery.PrivateBin = (function($, RawDeflate) {
             $('#pasteFormatterDisplay').text($target.text());
             PasteViewer.setFormat(newFormat);
 
-            // update preview
-            if (Editor.isPreview()) {
-                PasteViewer.run();
-            }
-
             event.preventDefault();
         }
 
@@ -3758,6 +3764,18 @@ jQuery.PrivateBin = (function($, RawDeflate) {
             } else {
                 $burnAfterReadingOption.removeClass('buttondisabled');
             }
+        }
+
+        /**
+         * Clear the password input in the top navigation
+         * 
+         * @name TopNav.clearPasswordInput
+         * @function
+         */
+
+        function clearPasswordInput()
+        {
+            $passwordInput.val('');
         }
 
 
@@ -3824,7 +3842,8 @@ jQuery.PrivateBin = (function($, RawDeflate) {
          */
         function downloadText()
         {
-            var filename='paste-' + Model.getPasteId() + '.txt';
+            var fileFormat = PasteViewer.getFormat() === 'markdown' ? '.md' : '.txt';
+            var filename='paste-' + Model.getPasteId() + fileFormat;
             var text = PasteViewer.getText();
 
             var element = document.createElement('a');
@@ -3849,7 +3868,7 @@ jQuery.PrivateBin = (function($, RawDeflate) {
          */
         function setLanguage(event)
         {
-            document.cookie = 'lang=' + $(event.target).data('lang') + ';secure';
+            document.cookie = 'lang=' + $(event.target).data('lang') + '; SameSite=Lax; Secure';
             UiHelper.reloadHome();
             event.preventDefault();
         }
@@ -3921,6 +3940,10 @@ jQuery.PrivateBin = (function($, RawDeflate) {
                 text: window.location.href
             });
             $('#qrcode-display').html(qrCanvas);
+            // only necessary for bootstrap 5, other templates won't have this
+            if (bootstrap.Tooltip.VERSION) {
+                $('#qrcodemodal').modal('show');
+            }
         }
 
         /**
@@ -3965,7 +3988,7 @@ jQuery.PrivateBin = (function($, RawDeflate) {
             }
             emailBody += I18n._('Link:');
             emailBody += EOL;
-            emailBody += `${window.location.href}`;
+            emailBody += $('#pasteurl').attr('href'); // might have been shortened
             return emailBody;
         }
 
@@ -4337,6 +4360,7 @@ jQuery.PrivateBin = (function($, RawDeflate) {
         me.resetInput = function()
         {
             clearAttachmentInput();
+            clearPasswordInput();
             $burnAfterReading.prop('checked', burnAfterReadingDefault);
             $openDiscussion.prop('checked', openDiscussionDefault);
             if (openDiscussionDefault || !burnAfterReadingDefault) $openDiscussionOption.removeClass('buttondisabled');
@@ -4543,6 +4567,13 @@ jQuery.PrivateBin = (function($, RawDeflate) {
             // bootstrap template drop downs
             $('ul.dropdown-menu li a', $('#expiration').parent()).click(updateExpiration);
             $('ul.dropdown-menu li a', $('#formatter').parent()).click(updateFormat);
+            // bootstrap5 & page drop downs
+            $('#pasteExpiration').on('change', function() {
+                pasteExpiration = Model.getExpirationDefault();
+            });
+            $('#pasteFormatter').on('change', function() {
+                PasteViewer.setFormat(Model.getFormatDefault());
+            });
 
             // initiate default state of checkboxes
             changeBurnAfterReading();
@@ -4551,7 +4582,7 @@ jQuery.PrivateBin = (function($, RawDeflate) {
             // get default values from template or fall back to set value
             burnAfterReadingDefault = me.getBurnAfterReading();
             openDiscussionDefault = me.getOpenDiscussion();
-            pasteExpiration = Model.getExpirationDefault() || pasteExpiration;
+            pasteExpiration = Model.getExpirationDefault();
 
             createButtonsDisplayed = false;
             viewButtonsDisplayed = false;

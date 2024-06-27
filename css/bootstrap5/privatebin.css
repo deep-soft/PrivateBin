@@ -1,0 +1,82 @@
+/**
+ * PrivateBin
+ *
+ * Cascading style sheets for bootstrap 5 template.
+ *
+ * @link      https://github.com/PrivateBin/PrivateBin
+ * @copyright 2012 Sébastien SAUVAGE (sebsauvage.net)
+ * @license   https://www.opensource.org/licenses/zlib-license.php The zlib/libpng License
+ */
+
+@import url("../common.css");
+
+.hidden {
+	display: none !important;
+}
+
+#qrcodemodalClose {
+	float: right;
+}
+
+#qrcode-display {
+	width: 200px;
+	height: 200px;
+	margin: auto;
+}
+
+#pastelink {
+	display: inline;
+}
+
+#pastelink > a {
+	word-wrap: break-word;
+}
+
+#preview {
+	margin-bottom: 10px;
+}
+
+#message, .replymessage {
+	font-family: monospace;
+	resize: vertical;
+}
+
+#nickname {
+	margin: 5px 0;
+}
+
+#comments, #comments button {
+	margin-bottom: 10px;
+}
+
+.comment {
+	border-left: 1px solid #ccc;
+	padding: 5px 0 5px 10px;
+	transition: background-color 0.75s ease-out;
+}
+
+.dropdown-menu {
+	--bs-dropdown-min-width: 23rem;
+}
+
+[data-bs-theme=light] pre, [data-bs-theme=light] .card {
+	background-color: RGBA(var(--bs-light-rgb), var(--bs-bg-opacity, 1));
+}
+
+li.L0, li.L1, li.L2, li.L3, li.L4, li.L5, li.L6, li.L7, li.L8, li.L9 {
+	color: revert !important;
+	list-style-type: decimal !important;
+}
+
+[data-bs-theme=dark] li.L1, [data-bs-theme=dark] li.L3, [data-bs-theme=dark] li.L5,
+[data-bs-theme=dark] li.L7, [data-bs-theme=dark] li.L9 {
+	background-color: var(--bs-gray-dark) !important;
+}
+
+.text-right button {
+	float: right;
+}
+
+html[dir="rtl"] #deletelink, html[dir="rtl"] #qrcodemodalClose {
+	float: left;
+}

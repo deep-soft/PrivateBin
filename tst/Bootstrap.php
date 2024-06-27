@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 use Google\Cloud\Core\Exception\BadRequestException;
 use Google\Cloud\Core\Exception\NotFoundException;
@@ -508,6 +508,11 @@ class ConnectionInterfaceStub implements ConnectionInterface
         throw new BadMethodCallException('not supported by this stub');
     }
 
+    public function restoreObject(array $args = array())
+    {
+        throw new BadMethodCallException('not supported by this stub');
+    }
+
     public function copyObject(array $args = array())
     {
         throw new BadMethodCallException('not supported by this stub');
@@ -655,7 +660,6 @@ class Helper
         ),
         'meta' => array(
             'expire'  => '5min',
-            'created' => 1344803344,
         ),
         'v'  => 2,
         'ct' => 'ME5JF/YBEijp2uYMzLZozbKtWc5wfy6R59NBb7SmRig=',
@@ -696,7 +700,7 @@ class Helper
      */
     public static function getPasteId()
     {
-        return version_compare(PHP_VERSION, '5.6', '<') ? hash('fnv164', self::$pasteV2['ct']) : self::$pasteid;
+        return self::$pasteid;
     }
 
     /**

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * PrivateBin
  *
@@ -7,7 +7,6 @@
  * @link      https://github.com/PrivateBin/PrivateBin
  * @copyright 2012 Sébastien SAUVAGE (sebsauvage.net)
  * @license   https://www.opensource.org/licenses/zlib-license.php The zlib/libpng License
- * @version   1.7.1
  */
 
 namespace PrivateBin\Data;
@@ -55,7 +54,6 @@ class Database extends AbstractData
      * @access public
      * @param  array $options
      * @throws Exception
-     * @return
      */
     public function __construct(array $options)
     {
@@ -147,9 +145,6 @@ class Database extends AbstractData
         $attachment       = $attachmentname   = null;
         $meta             = $paste['meta'];
         $isVersion1       = array_key_exists('data', $paste);
-        list($createdKey) = $this->_getVersionedKeys($isVersion1 ? 1 : 2);
-        $created          = (int) $meta[$createdKey];
-        unset($meta[$createdKey], $paste['meta']);
         if (array_key_exists('expire_date', $meta)) {
             $expire_date = (int) $meta['expire_date'];
             unset($meta['expire_date']);
@@ -178,11 +173,10 @@ class Database extends AbstractData
         try {
             return $this->_exec(
                 'INSERT INTO "' . $this->_sanitizeIdentifier('paste') .
-                '" VALUES(?,?,?,?,?,?,?,?,?)',
+                '" VALUES(?,?,?,?,?,?,?,?)',
                 array(
                     $pasteid,
                     $isVersion1 ? $paste['data'] : Json::encode($paste),
-                    $created,
                     $expire_date,
                     (int) $opendiscussion,
                     (int) $burnafterreading,
@@ -219,13 +213,7 @@ class Database extends AbstractData
         // create array
         $data       = Json::decode($row['data']);
         $isVersion2 = array_key_exists('v', $data) && $data['v'] >= 2;
-        if ($isVersion2) {
-            $paste            = $data;
-            list($createdKey) = $this->_getVersionedKeys(2);
-        } else {
-            $paste            = array('data' => $row['data']);
-            list($createdKey) = $this->_getVersionedKeys(1);
-        }
+        $paste      = $isVersion2 ? $data : array('data' => $row['data']);
 
         try {
             $row['meta'] = Json::decode($row['meta']);
@@ -234,7 +222,6 @@ class Database extends AbstractData
         }
         $row                        = self::upgradePreV1Format($row);
         $paste['meta']              = $row['meta'];
-        $paste['meta'][$createdKey] = (int) $row['postdate'];
         $expire_date                = (int) $row['expiredate'];
         if ($expire_date > 0) {
             $paste['meta']['expire_date'] = $expire_date;
@@ -752,7 +739,6 @@ class Database extends AbstractData
             'CREATE TABLE "' . $this->_sanitizeIdentifier('paste') . '" ( ' .
             "\"dataid\" CHAR(16) NOT NULL$main_key, " .
             "\"data\" $attachmentType, " .
-            '"postdate" INT, ' .
             '"expiredate" INT, ' .
             '"opendiscussion" INT, ' .
             '"burnafterreading" INT, ' .
@@ -866,73 +852,87 @@ class Database extends AbstractData
     {
         $dataType       = $this->_getDataType();
         $attachmentType = $this->_getAttachmentType();
-        switch ($oldversion) {
-            case '0.21':
-                // create the meta column if necessary (pre 0.21 change)
-                try {
-                    $this->_db->exec(
-                        'SELECT "meta" FROM "' . $this->_sanitizeIdentifier('paste') . '" ' .
-                        ($this->_type === 'oci' ? 'FETCH NEXT 1 ROWS ONLY' : 'LIMIT 1')
-                    );
-                } catch (PDOException $e) {
-                    $this->_db->exec('ALTER TABLE "' . $this->_sanitizeIdentifier('paste') . '" ADD COLUMN "meta" TEXT');
-                }
-                // SQLite only allows one ALTER statement at a time...
+        if (version_compare($oldversion, '0.21', '<=')) {
+            // create the meta column if necessary (pre 0.21 change)
+            try {
+                $this->_db->exec(
+                    'SELECT "meta" FROM "' . $this->_sanitizeIdentifier('paste') . '" ' .
+                    ($this->_type === 'oci' ? 'FETCH NEXT 1 ROWS ONLY' : 'LIMIT 1')
+                );
+            } catch (PDOException $e) {
+                $this->_db->exec('ALTER TABLE "' . $this->_sanitizeIdentifier('paste') . '" ADD COLUMN "meta" TEXT');
+            }
+            // SQLite only allows one ALTER statement at a time...
+            $this->_db->exec(
+                'ALTER TABLE "' . $this->_sanitizeIdentifier('paste') .
+                "\" ADD COLUMN \"attachment\" $attachmentType"
+            );
+            $this->_db->exec(
+                'ALTER TABLE "' . $this->_sanitizeIdentifier('paste') . "\" ADD COLUMN \"attachmentname\" $dataType"
+            );
+            // SQLite doesn't support MODIFY, but it allows TEXT of similar
+            // size as BLOB, so there is no need to change it there
+            if ($this->_type !== 'sqlite') {
                 $this->_db->exec(
                     'ALTER TABLE "' . $this->_sanitizeIdentifier('paste') .
-                    "\" ADD COLUMN \"attachment\" $attachmentType"
+                    "\" ADD PRIMARY KEY (\"dataid\"), MODIFY COLUMN \"data\" $dataType"
                 );
                 $this->_db->exec(
-                    'ALTER TABLE "' . $this->_sanitizeIdentifier('paste') . "\" ADD COLUMN \"attachmentname\" $dataType"
+                    'ALTER TABLE "' . $this->_sanitizeIdentifier('comment') .
+                    "\" ADD PRIMARY KEY (\"dataid\"), MODIFY COLUMN \"data\" $dataType, " .
+                    "MODIFY COLUMN \"nickname\" $dataType, MODIFY COLUMN \"vizhash\" $dataType"
                 );
-                // SQLite doesn't support MODIFY, but it allows TEXT of similar
-                // size as BLOB, so there is no need to change it there
-                if ($this->_type !== 'sqlite') {
-                    $this->_db->exec(
-                        'ALTER TABLE "' . $this->_sanitizeIdentifier('paste') .
-                        "\" ADD PRIMARY KEY (\"dataid\"), MODIFY COLUMN \"data\" $dataType"
-                    );
-                    $this->_db->exec(
-                        'ALTER TABLE "' . $this->_sanitizeIdentifier('comment') .
-                        "\" ADD PRIMARY KEY (\"dataid\"), MODIFY COLUMN \"data\" $dataType, " .
-                        "MODIFY COLUMN \"nickname\" $dataType, MODIFY COLUMN \"vizhash\" $dataType"
-                    );
-                } else {
-                    $this->_db->exec(
-                        'CREATE UNIQUE INDEX IF NOT EXISTS "' .
-                        $this->_sanitizeIdentifier('paste_dataid') . '" ON "' .
-                        $this->_sanitizeIdentifier('paste') . '" ("dataid")'
-                    );
-                    $this->_db->exec(
-                        'CREATE UNIQUE INDEX IF NOT EXISTS "' .
-                        $this->_sanitizeIdentifier('comment_dataid') . '" ON "' .
-                        $this->_sanitizeIdentifier('comment') . '" ("dataid")'
-                    );
-                }
-                // CREATE INDEX IF NOT EXISTS not supported as of Oracle MySQL <= 8.0
+            } else {
                 $this->_db->exec(
-                    'CREATE INDEX "' .
-                    $this->_sanitizeIdentifier('comment_parent') . '" ON "' .
-                    $this->_sanitizeIdentifier('comment') . '" ("pasteid")'
+                    'CREATE UNIQUE INDEX IF NOT EXISTS "' .
+                    $this->_sanitizeIdentifier('paste_dataid') . '" ON "' .
+                    $this->_sanitizeIdentifier('paste') . '" ("dataid")'
                 );
-                // no break, continue with updates for 0.22 and later
-            case '1.3':
-                // SQLite doesn't support MODIFY, but it allows TEXT of similar
-                // size as BLOB and PostgreSQL uses TEXT, so there is no need
-                // to change it there
-                if ($this->_type !== 'sqlite' && $this->_type !== 'pgsql') {
-                    $this->_db->exec(
-                        'ALTER TABLE "' . $this->_sanitizeIdentifier('paste') .
-                        "\" MODIFY COLUMN \"data\" $attachmentType"
-                    );
-                }
-                // no break, continue with updates for all newer versions
-            default:
-                $this->_exec(
-                    'UPDATE "' . $this->_sanitizeIdentifier('config') .
-                    '" SET "value" = ? WHERE "id" = ?',
-                    array(Controller::VERSION, 'VERSION')
+                $this->_db->exec(
+                    'CREATE UNIQUE INDEX IF NOT EXISTS "' .
+                    $this->_sanitizeIdentifier('comment_dataid') . '" ON "' .
+                    $this->_sanitizeIdentifier('comment') . '" ("dataid")'
                 );
+            }
+            // CREATE INDEX IF NOT EXISTS not supported as of Oracle MySQL <= 8.0
+            $this->_db->exec(
+                'CREATE INDEX "' .
+                $this->_sanitizeIdentifier('comment_parent') . '" ON "' .
+                $this->_sanitizeIdentifier('comment') . '" ("pasteid")'
+            );
         }
+        if (version_compare($oldversion, '1.3', '<=')) {
+            // SQLite doesn't support MODIFY, but it allows TEXT of similar
+            // size as BLOB and PostgreSQL uses TEXT, so there is no need
+            // to change it there
+            if ($this->_type !== 'sqlite' && $this->_type !== 'pgsql') {
+                $this->_db->exec(
+                    'ALTER TABLE "' . $this->_sanitizeIdentifier('paste') .
+                    "\" MODIFY COLUMN \"data\" $attachmentType"
+                );
+            }
+        }
+        if (version_compare($oldversion, '1.7.1', '<=')) {
+            $supportsDropColumn = true;
+            if ($this->_type === 'sqlite') {
+                try {
+                    $row                = $this->_select('SELECT sqlite_version() AS "v"', array(), true);
+                    $supportsDropColumn = version_compare($row['v'], '3.35.0', '>=');
+                } catch (PDOException $e) {
+                    $supportsDropColumn = false;
+                }
+            }
+            if ($supportsDropColumn) {
+                $this->_db->exec(
+                    'ALTER TABLE "' . $this->_sanitizeIdentifier('paste') .
+                    '" DROP COLUMN "postdate"'
+                );
+            }
+        }
+        $this->_exec(
+            'UPDATE "' . $this->_sanitizeIdentifier('config') .
+            '" SET "value" = ? WHERE "id" = ?',
+            array(Controller::VERSION, 'VERSION')
+        );
     }
 }

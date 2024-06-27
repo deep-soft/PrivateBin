@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * PrivateBin
  *
@@ -7,7 +7,6 @@
  * @link      https://github.com/PrivateBin/PrivateBin
  * @copyright 2012 Sébastien SAUVAGE (sebsauvage.net)
  * @license   https://www.opensource.org/licenses/zlib-license.php The zlib/libpng License
- * @version   1.7.1
  */
 
 namespace PrivateBin;
@@ -28,7 +27,7 @@ class Controller
      *
      * @const string
      */
-    const VERSION = '1.7.1';
+    const VERSION = '1.7.3';
 
     /**
      * minimal required PHP version
@@ -143,12 +142,16 @@ class Controller
                 break;
         }
 
+        $this->_setCacheHeaders();
+
         // output JSON or HTML
         if ($this->_request->isJsonApiCall()) {
             header('Content-type: ' . Request::MIME_JSON);
             header('Access-Control-Allow-Origin: *');
             header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE');
             header('Access-Control-Allow-Headers: X-Requested-With, Content-Type');
+            header('X-Uncompressed-Content-Length: ' . strlen($this->_json));
+            header('Access-Control-Expose-Headers: X-Uncompressed-Content-Length');
             echo $this->_json;
         } else {
             $this->_view();
@@ -174,8 +177,24 @@ class Controller
         // force default language, if language selection is disabled and a default is set
         if (!$this->_conf->getKey('languageselection') && strlen($lang) == 2) {
             $_COOKIE['lang'] = $lang;
-            setcookie('lang', $lang, 0, '', '', true);
+            setcookie('lang', $lang, array('SameSite' => 'Lax', 'Secure' => true));
         }
+    }
+
+    /**
+     * Turn off browser caching
+     *
+     * @access private
+     */
+    private function _setCacheHeaders()
+    {
+        // set headers to disable caching
+        $time = gmdate('D, d M Y H:i:s \G\M\T');
+        header('Cache-Control: no-store, no-cache, no-transform, must-revalidate');
+        header('Pragma: no-cache');
+        header('Expires: ' . $time);
+        header('Last-Modified: ' . $time);
+        header('Vary: Accept');
     }
 
     /**
@@ -300,10 +319,10 @@ class Controller
             $this->_error = $e->getMessage();
         }
         if ($this->_request->isJsonApiCall()) {
-            if (strlen($this->_error)) {
-                $this->_return_message(1, $this->_error);
-            } else {
+            if (empty($this->_error)) {
                 $this->_return_message(0, $dataid);
+            } else {
+                $this->_return_message(1, $this->_error);
             }
         }
     }
@@ -343,13 +362,6 @@ class Controller
      */
     private function _view()
     {
-        // set headers to disable caching
-        $time = gmdate('D, d M Y H:i:s \G\M\T');
-        header('Cache-Control: no-store, no-cache, no-transform, must-revalidate');
-        header('Pragma: no-cache');
-        header('Expires: ' . $time);
-        header('Last-Modified: ' . $time);
-        header('Vary: Accept');
         header('Content-Security-Policy: ' . $this->_conf->getKey('cspheader'));
         header('Cross-Origin-Resource-Policy: same-origin');
         header('Cross-Origin-Embedder-Policy: require-corp');
@@ -376,7 +388,7 @@ class Controller
         $languageselection = '';
         if ($this->_conf->getKey('languageselection')) {
             $languageselection = I18n::getLanguage();
-            setcookie('lang', $languageselection, 0, '', '', true);
+            setcookie('lang', $languageselection, array('SameSite' => 'Lax', 'Secure' => true));
         }
 
         // strip policies that are unsupported in meta tag

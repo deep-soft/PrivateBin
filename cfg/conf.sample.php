@@ -18,6 +18,11 @@ discussion = true
 ; preselect the discussion feature, defaults to false
 opendiscussion = false
 
+; enable or disable the display of dates & times in the comments, defaults to true
+; Note that internally the creation time will still get tracked in order to sort
+; the comments by creation time, but you can choose not to display them.
+; discussiondatedisplay = false
+
 ; enable or disable the password feature, defaults to true
 password = true
 
@@ -37,7 +42,12 @@ defaultformatter = "plaintext"
 ; size limit per paste or comment in bytes, defaults to 10 Mebibytes
 sizelimit = 10485760
 
-; template to include, default is "bootstrap" (tpl/bootstrap.php)
+; template to include, default is "bootstrap" (tpl/bootstrap.php), also
+; available are "page" (tpl/page.php), the classic ZeroBin style and several
+; bootstrap variants: "bootstrap-dark", "bootstrap-compact", "bootstrap-page",
+; which can be combined with "-dark" and "-compact" for "bootstrap-dark-page"
+; and finally "bootstrap-compact-page" - previews at:
+; https://privatebin.info/screenshots.html
 template = "bootstrap"
 
 ; (optional) info text to display
@@ -83,8 +93,10 @@ languageselection = false
 ; scripts or run your site behind certain DDoS-protection services.
 ; Check the documentation at https://content-security-policy.com/
 ; Notes:
-; - If you use a bootstrap theme, you can remove the allow-popups from the
+; - If you use any bootstrap theme, you can remove the allow-popups from the
 ;   sandbox restrictions.
+; - If you use the bootstrap5 theme, you must change default-src to 'self' to
+;   enable display of the svg icons
 ; - By default this disallows to load images from third-party servers, e.g. when
 ;   they are embedded in pastes. If you wish to allow that, you can adjust the
 ;   policy here. See https://github.com/PrivateBin/PrivateBin/wiki/FAQ#why-does-not-it-load-embedded-images
@@ -240,7 +252,7 @@ dir = PATH "data"
 ; - AWS_ACCESS_KEY_ID
 ; - AWS_SECRET_ACCESS_KEY
 ; - AWS_SESSION_TOKEN (if needed)
-; for more details, see https://docs.aws.amazon.com/sdk-for-php/v3/developer-guide/guide_credentials.html#default-credential-chain 
+; for more details, see https://docs.aws.amazon.com/sdk-for-php/v3/developer-guide/guide_credentials.html#default-credential-chain
 ;class = S3Storage
 ;[model_options]
 ;region = "eu-central-1"
@@ -254,8 +266,8 @@ dir = PATH "data"
 ;   Only use this if you allow short URL creation without credentials.
 ; - Alternatively, using the parameters in this section ("signature" and
 ;   "apiurl"), "urlshortener" needs to point to the base URL of your PrivateBin
-;   instance with "shortenviayourls?link=" appended. For example:
-;   urlshortener = "${basepath}shortenviayourls?link="
+;   instance with "?shortenviayourls&link=" appended. For example:
+;   urlshortener = "${basepath}?shortenviayourls&link="
 ;   This URL will in turn call YOURLS on the server side, using the URL from
 ;   "apiurl" and the "access signature" from the "signature" parameters below.
 

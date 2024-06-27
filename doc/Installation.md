@@ -22,6 +22,7 @@ for more information.
 ### Minimal Requirements
 
 - PHP version 7.3 or above
+- ctype extension
 - GD extension (when using identicon or vizhash icons, jdenticon works without it)
 - zlib extension
 - some disk space or a database supported by [PDO](https://php.net/manual/book.pdo.php)
@@ -169,14 +170,13 @@ user these additional privileges:
 
 For reference or if you want to create the table schema for yourself to avoid
 having to give PrivateBin too many permissions (replace `prefix_` with your own
-table prefix and create the table schema with your favourite MariaDB/MySQL
+table prefix and create the table schema with your favorite MariaDB/MySQL
 client):
 
 ```sql
 CREATE TABLE prefix_paste (
     dataid CHAR(16) NOT NULL,
     data MEDIUMBLOB,
-    postdate INT,
     expiredate INT,
     opendiscussion INT,
     burnafterreading INT,
@@ -201,7 +201,7 @@ CREATE INDEX parent ON prefix_comment(pasteid);
 CREATE TABLE prefix_config (
     id CHAR(16) NOT NULL, value TEXT, PRIMARY KEY (id)
 );
-INSERT INTO prefix_config VALUES('VERSION', '1.7.1');
+INSERT INTO prefix_config VALUES('VERSION', '1.7.3');
 ```
 
 In **PostgreSQL**, the `data`, `attachment`, `nickname` and `vizhash` columns
