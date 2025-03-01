@@ -10,6 +10,8 @@ class ViewTest extends TestCase
 
     private static $status = '!*#@?$+';
 
+    private static $is_deleted = false;
+
     private static $formatters = array(
         'plaintext'          => 'Plain Text',
         'syntaxhighlighting' => 'Source Code',
@@ -38,6 +40,7 @@ class ViewTest extends TestCase
         $page->assign('BASEPATH', '');
         $page->assign('ERROR', self::$error);
         $page->assign('STATUS', self::$status);
+        $page->assign('ISDELETED', self::$is_deleted);
         $page->assign('VERSION', self::$version);
         $page->assign('DISCUSSION', true);
         $page->assign('OPENDISCUSSION', true);
@@ -63,6 +66,7 @@ class ViewTest extends TestCase
         $page->assign('HTTPSLINK', 'https://example.com/');
         $page->assign('COMPRESSION', 'zlib');
         $page->assign('CSPHEADER', 'default-src \'none\'');
+        $page->assign('SRI', array());
 
         $dir = dir(PATH . 'tpl');
         while (false !== ($file = $dir->read())) {

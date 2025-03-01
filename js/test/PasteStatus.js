@@ -30,11 +30,11 @@ describe('PasteStatus', function () {
                 const expected1 = common.urlToString(url1).replace(/&(gt|lt)$/, '&$1a'),
                     expected2 = common.urlToString(url2).replace(/&(gt|lt)$/, '&$1a'),
                     clean = jsdom();
-                $('body').html('<div><div id="deletelink"></div><div id="pastelink"></div></div>');
+                $('body').html('<a href="#" id="deletelink"><span></span></a><div id="pastelink"></div>');
                 $.PrivateBin.PasteStatus.init();
                 $.PrivateBin.PasteStatus.createPasteNotification(expected1, expected2);
                 const result1 = $('#pasteurl')[0].href,
-                    result2 = $('#deletelink a')[0].href;
+                    result2 = $('#deletelink')[0].href;
                 clean();
                 return result1 === expected1 && result2 === expected2;
             }
@@ -155,7 +155,7 @@ describe('PasteStatus', function () {
                         '\t\t<title>PrivateBin</title>\n' +
                         '\t</head>\n' +
                         '\t<body>\n' +
-                        '\t\t<p>Your paste is <a id="pasteurl" href="' + shortUrlString + '">' + shortUrlString + '</a> <span id="copyhint">(Hit [Ctrl]+[c] to copy)</span></p>\n' +
+                        '\t\t<p>Your paste is <a id="pasteurl" href="' + shortUrlString + '">' + shortUrlString + '</a> <span id="copyhint">(Hit <kbd>Ctrl</kbd>+<kbd>c</kbd> to copy)</span></p>\n' +
                         '\t</body>\n' +
                         '</html>',
                     clean = jsdom();
@@ -255,4 +255,3 @@ describe('PasteStatus', function () {
         );
     });
 });
-

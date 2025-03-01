@@ -27,7 +27,7 @@ class Controller
      *
      * @const string
      */
-    const VERSION = '1.7.4';
+    const VERSION = '1.7.6';
 
     /**
      * minimal required PHP version
@@ -66,6 +66,14 @@ class Controller
      * @var    string
      */
     private $_status = '';
+
+    /**
+     * status message
+     *
+     * @access private
+     * @var    bool
+     */
+    private $_is_deleted = false;
 
     /**
      * JSON message
@@ -171,13 +179,46 @@ class Controller
         $this->_request = new Request;
         $this->_urlBase = $this->_request->getRequestUri();
 
-        // set default language
+        $this->_setDefaultLanguage();
+        $this->_setDefaultTemplate();
+    }
+
+    /**
+     * Set default language
+     *
+     * @access private
+     */
+    private function _setDefaultLanguage()
+    {
+        $this->_conf = new Configuration;
+
         $lang = $this->_conf->getKey('languagedefault');
         I18n::setLanguageFallback($lang);
         // force default language, if language selection is disabled and a default is set
         if (!$this->_conf->getKey('languageselection') && strlen($lang) == 2) {
             $_COOKIE['lang'] = $lang;
             setcookie('lang', $lang, array('SameSite' => 'Lax', 'Secure' => true));
+        }
+    }
+
+    /**
+     * Set default template
+     *
+     * @access private
+     */
+    private function _setDefaultTemplate()
+    {
+        $this->_conf = new Configuration;
+
+        $templates = $this->_conf->getSection('available_templates');
+        $template  = $this->_conf->getKey('template');
+        TemplateSwitcher::setAvailableTemplates($templates);
+        TemplateSwitcher::setTemplateFallback($template);
+
+        // force default template, if template selection is disabled and a default is set
+        if (!$this->_conf->getKey('templateselection') && !empty($template)) {
+            $_COOKIE['template'] = $template;
+            setcookie('template', $template, array('SameSite' => 'Lax', 'Secure' => true));
         }
     }
 
@@ -308,7 +349,8 @@ class Controller
                 if (hash_equals($paste->getDeleteToken(), $deletetoken)) {
                     // Paste exists and deletion token is valid: Delete the paste.
                     $paste->delete();
-                    $this->_status = 'Paste was properly deleted.';
+                    $this->_status     = 'Paste was properly deleted.';
+                    $this->_is_deleted = true;
                 } else {
                     $this->_error = 'Wrong deletion token. Paste was not deleted.';
                 }
@@ -391,6 +433,13 @@ class Controller
             setcookie('lang', $languageselection, array('SameSite' => 'Lax', 'Secure' => true));
         }
 
+        // set template cookie if that functionality was enabled
+        $templateselection = '';
+        if ($this->_conf->getKey('templateselection')) {
+            $templateselection = TemplateSwitcher::getTemplate();
+            setcookie('template', $templateselection, array('SameSite' => 'Lax', 'Secure' => true));
+        }
+
         // strip policies that are unsupported in meta tag
         $metacspheader = str_replace(
             array(
@@ -412,6 +461,7 @@ class Controller
         }
         $page->assign('BASEPATH', I18n::_($this->_conf->getKey('basepath')));
         $page->assign('STATUS', I18n::_($this->_status));
+        $page->assign('ISDELETED', I18n::_(json_encode($this->_is_deleted)));
         $page->assign('VERSION', self::VERSION);
         $page->assign('DISCUSSION', $this->_conf->getKey('discussion'));
         $page->assign('OPENDISCUSSION', $this->_conf->getKey('opendiscussion'));
@@ -428,6 +478,8 @@ class Controller
         $page->assign('ZEROBINCOMPATIBILITY', $this->_conf->getKey('zerobincompatibility'));
         $page->assign('LANGUAGESELECTION', $languageselection);
         $page->assign('LANGUAGES', I18n::getLanguageLabels(I18n::getAvailableLanguages()));
+        $page->assign('TEMPLATESELECTION', $templateselection);
+        $page->assign('TEMPLATES', TemplateSwitcher::getAvailableTemplates());
         $page->assign('EXPIRE', $expire);
         $page->assign('EXPIREDEFAULT', $this->_conf->getKey('default', 'expire'));
         $page->assign('URLSHORTENER', $this->_conf->getKey('urlshortener'));
@@ -436,7 +488,8 @@ class Controller
         $page->assign('HTTPWARNING', $this->_conf->getKey('httpwarning'));
         $page->assign('HTTPSLINK', 'https://' . $this->_request->getHost() . $this->_request->getRequestUri());
         $page->assign('COMPRESSION', $this->_conf->getKey('compression'));
-        $page->draw($this->_conf->getKey('template'));
+        $page->assign('SRI', $this->_conf->getSection('sri'));
+        $page->draw(TemplateSwitcher::getTemplate());
     }
 
     /**

@@ -86,6 +86,7 @@ h3.title {
 #aboutbox a { color: #94a3b4; }
 
 #message, #cleartext, #prettymessage, #attachment, .replymessage {
+	position: relative;
 	clear: both;
 	color: #000;
 	background-color: #fff;
@@ -125,7 +126,7 @@ h3.title {
 
 #pasteresult button { margin-left: 11px; }
 
-#toolbar, #status { margin-bottom: 5px; }
+#message, #plaintext, #prettymessage, #toolbar, #status { margin-bottom: 5px; }
 
 #copyhint { color: #666; font-size: 0.85em }
 

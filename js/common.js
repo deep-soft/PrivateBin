@@ -5,7 +5,6 @@ global.assert = require('assert');
 global.jsc = require('jsverify');
 global.jsdom = require('jsdom-global');
 global.cleanup = global.jsdom();
-global.URL = require('jsdom-url').URL;
 global.fs = require('fs');
 global.WebCrypto = require('@peculiar/webcrypto').Crypto;
 
@@ -17,7 +16,7 @@ require('./prettify');
 global.prettyPrint = window.PR.prettyPrint;
 global.prettyPrintOne = window.PR.prettyPrintOne;
 global.showdown = require('./showdown-2.1.0');
-global.DOMPurify = require('./purify-3.1.3');
+global.DOMPurify = require('./purify-3.2.4');
 global.baseX = require('./base-x-4.0.0').baseX;
 global.Legacy = require('./legacy').Legacy;
 require('./bootstrap-3.4.1');
@@ -79,8 +78,16 @@ function parseMime(line) {
 }
 
 // common testing helper functions
-exports.atob = atob;
-exports.btoa = btoa;
+// as of jsDOM 22 the base64 functions provided in the DOM are more restrictive
+// than browser implementation and throw when being passed invalid unicode
+// codepoints - as we use these in the encryption with binary data, we need
+// these to be character encoding agnostic
+exports.atob = function(encoded) {
+    return Buffer.from(encoded, 'base64').toString('binary');
+}
+exports.btoa = function(text) {
+    return Buffer.from(text, 'binary').toString('base64');
+}
 
 // provides random lowercase characters from a to z
 exports.jscA2zString = function() {
@@ -151,4 +158,23 @@ exports.urlToString = function (url) {
     return url.schema + '://' + url.address.join('') + '/' + (url.query ? '?' +
         encodeURI(url.query.join('').replace(/^&+|&+$/gm,'')) : '') +
         (url.fragment ? '#' + encodeURI(url.fragment) : '');
+};
+
+exports.enableClipboard = function () {
+    navigator.clipboard = (function () {
+        let savedText = "";
+
+        async function writeText(text) {
+            savedText = text;
+        };
+
+        async function readText() {
+            return savedText;
+        };
+
+        return {
+            writeText,
+            readText,
+        };
+    })();
 };

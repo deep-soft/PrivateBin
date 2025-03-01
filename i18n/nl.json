@@ -143,7 +143,7 @@
     "Avatar generated from IP address": "Anonieme avatar (van het IP-adres)",
     "Add comment": "Commentaar toevoegen",
     "Optional nickname…": "Optionele bijnaam…",
-    "Post comment": "Plaats een commentaar",
+    "Post comment": "Plaats commentaar",
     "Sending comment…": "Commentaar verzenden…",
     "Comment posted.": "Commentaar geplaatst.",
     "Could not refresh display: %s": "Kon de weergave niet vernieuwen: %s",
@@ -151,7 +151,7 @@
     "server error or not responding": "Serverfout of server reageert niet",
     "Could not post comment: %s": "Kon het commentaar niet plaatsen: %s",
     "Sending paste…": "Paste verzenden…",
-    "Your paste is <a id=\"pasteurl\" href=\"%s\">%s</a> <span id=\"copyhint\">(Hit [Ctrl]+[c] to copy)</span>": "Je paste is <a id=\"pasteurl\" href=\"%s\">%s</a> <span id=\"copyhint\">(Druk [Ctrl]+[c] om te kopiëren)</span>",
+    "Your paste is <a id=\"pasteurl\" href=\"%s\">%s</a> <span id=\"copyhint\">(Hit <kbd>Ctrl</kbd>+<kbd>c</kbd> to copy)</span>": "Je paste is <a id=\"pasteurl\" href=\"%s\">%s</a> <span id=\"copyhint\">(Druk <kbd>Ctrl</kbd>+<kbd>c</kbd> om te kopiëren)</span>",
     "Delete data": "Gegevens wissen",
     "Could not create paste: %s": "Kon de paste niet aanmaken: %s",
     "Cannot decrypt paste: Decryption key missing in URL (Did you use a redirector or an URL shortener which strips part of the URL?)": "Kon de paste niet decoderen: Decoderingssleutel ontbreekt in URL (Heb je een doorverwijzer of een URL-verkorter gebruikt die een deel van de URL verwijdert?)",
@@ -219,5 +219,13 @@
     "Yes, see it": "Ja, tonen",
     "Dark Mode": "Donkere modus",
     "Error compressing paste, due to missing WebAssembly support.": "Fout bij het comprimeren van notitie door ontbrekende ondersteuning voor WebAssembly.",
-    "Error decompressing paste, your browser does not support WebAssembly. Please use another browser to view this paste.": "Fout bij het decomprimeren van de notitie, uw browser ondersteunt WebAssembly niet. Gebruik een andere browser om deze notitie te bekijken."
+    "Error decompressing paste, your browser does not support WebAssembly. Please use another browser to view this paste.": "Fout bij het decomprimeren van de notitie, uw browser ondersteunt WebAssembly niet. Gebruik een andere browser om deze notitie te bekijken.",
+    "Start over": "Opnieuw beginnen",
+    "Paste copied to clipboard": "Notitie gekopieerd naar klembord",
+    "To copy paste press on the copy button or use the clipboard shortcut <kbd>Ctrl</kbd>+<kbd>c</kbd>/<kbd>Cmd</kbd>+<kbd>c</kbd>": "Om te kopiëren en plakken druk je op de knop Kopiëren of gebruik je de sneltoets op het klembord <kbd>Ctrl</kbd>+<kbd>c</kbd>/<kbd>Cmd</kbd>+<kbd>c</kbd>",
+    "Copy link": "Kopieer link",
+    "Link copied to clipboard": "Link gekopieerd naar klembord",
+    "Paste text": "Tekst plakken",
+    "Tabulator key serves as character (Hit <kbd>Ctrl</kbd>+<kbd>m</kbd> or <kbd>Esc</kbd> to toggle)": "Tabulatortoets dient als teken (gebruik <kbd>Ctrl</kbd>+<kbd>m</kbd> of <kbd>Esc</kbd> om te schakelen)",
+    "Theme": "Theme"
 }

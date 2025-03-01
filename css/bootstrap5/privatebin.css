@@ -14,53 +14,21 @@
 	display: none !important;
 }
 
-#qrcodemodalClose {
-	float: right;
+.opacity-05-1-hover {
+	opacity: 0.5;
+	transition: all 0.15s ease;
 }
 
-#qrcode-display {
-	width: 200px;
-	height: 200px;
-	margin: auto;
-}
-
-#pastelink {
-	display: inline;
-}
-
-#pastelink > a {
-	word-wrap: break-word;
-}
-
-#preview {
-	margin-bottom: 10px;
-}
-
-#message {
-	height: 70vh;
-}
-
-#message, .replymessage {
-	font-family: monospace;
-	resize: vertical;
-}
-
-#nickname {
-	margin: 5px 0;
-}
-
-#comments, #comments button {
-	margin-bottom: 10px;
-}
-
-.comment {
-	border-left: 1px solid #ccc;
-	padding: 5px 0 5px 10px;
-	transition: background-color 0.75s ease-out;
+.opacity-05-1-hover:hover {
+	opacity: 1;
 }
 
 .dropdown-menu {
 	--bs-dropdown-min-width: 23rem;
+}
+
+pre {
+	margin-bottom: 0;
 }
 
 [data-bs-theme=light] pre, [data-bs-theme=light] .card {
@@ -83,4 +51,40 @@ li.L0, li.L1, li.L2, li.L3, li.L4, li.L5, li.L6, li.L7, li.L8, li.L9 {
 
 html[dir="rtl"] #deletelink, html[dir="rtl"] #qrcodemodalClose {
 	float: left;
+}
+
+#prettyprint {
+	padding-right: 30px;
+}
+
+#prettyMessageCopyBtn {
+	position: absolute;
+	top: 8px;
+	right: 8px;
+	left: auto;
+	width: 20px;
+	height: 20px;
+	padding: 0;
+	background: none;
+	border: none;
+	z-index: 1;
+}
+
+html[dir="rtl"] #prettyMessageCopyBtn {
+	left: 8px;
+	right: auto;
+}
+
+#prettyMessageCopyBtn svg {
+	width: 100%;
+	height: 100%;
+	vertical-align: baseline;
+}
+
+#copySuccessIcon {
+	display: none;
+}
+
+#sendbutton svg {
+	transform: translateY(1.5px);
 }

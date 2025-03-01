@@ -116,7 +116,7 @@ class Helper
      *
      * @return string
      */
-    public static function getPasteId()
+    public static function getPasteId(): string
     {
         return self::$pasteid;
     }
@@ -128,7 +128,7 @@ class Helper
      * @param  array $meta
      * @return array
      */
-    public static function getPaste($version = 2, array $meta = array())
+    public static function getPaste($version = 2, array $meta = array()): array
     {
         $example = self::getPasteWithAttachment($version, $meta);
         // v1 has the attachment stored in a separate property
@@ -145,7 +145,7 @@ class Helper
      * @param  array $meta
      * @return array
      */
-    public static function getPasteWithAttachment($version = 2, array $meta = array())
+    public static function getPasteWithAttachment($version = 2, array $meta = array()): array
     {
         $example                 = $version === 1 ? self::$pasteV1 : self::$pasteV2;
         $example['meta']['salt'] = ServerSalt::generate();
@@ -160,7 +160,7 @@ class Helper
      * @param  array $meta
      * @return array
      */
-    public static function getPastePost($version = 2, array $meta = array())
+    public static function getPastePost($version = 2, array $meta = array()): array
     {
         $example         = self::getPaste($version, $meta);
         if ($version == 2) {
@@ -176,9 +176,9 @@ class Helper
      *
      * @param  int $version
      * @param  array $meta
-     * @return array
+     * @return string
      */
-    public static function getPasteJson($version = 2, array $meta = array())
+    public static function getPasteJson($version = 2, array $meta = array()): string
     {
         return json_encode(self::getPastePost($version, $meta));
     }
@@ -188,7 +188,7 @@ class Helper
      *
      * @return string
      */
-    public static function getCommentId()
+    public static function getCommentId(): string
     {
         return self::$commentid;
     }
@@ -200,7 +200,7 @@ class Helper
      * @param  array $meta
      * @return array
      */
-    public static function getComment($version = 2, array $meta = array())
+    public static function getComment($version = 2, array $meta = array()): array
     {
         $example         = $version === 1 ? self::$commentV1 : self::$pasteV2;
         if ($version === 2) {
@@ -220,7 +220,7 @@ class Helper
      * @param  int $version
      * @return array
      */
-    public static function getCommentPost()
+    public static function getCommentPost(): array
     {
         $example = self::getComment();
         unset($example['meta']);
@@ -231,11 +231,22 @@ class Helper
      * get example comment, as received via POST by user
      *
      * @param  int $version
-     * @return array
+     * @return string
      */
-    public static function getCommentJson()
+    public static function getCommentJson(): string
     {
         return json_encode(self::getCommentPost());
+    }
+
+    /**
+     * Returns 16 random hexadecimal characters.
+     *
+     * @return string
+     */
+    public static function getRandomId(): string
+    {
+        // 8 binary bytes are 16 characters long in hex
+        return bin2hex(random_bytes(8));
     }
 
     /**
@@ -243,8 +254,9 @@ class Helper
      *
      * @param string $path
      * @throws Exception
+     * @return void
      */
-    public static function rmDir($path)
+    public static function rmDir($path): void
     {
         if (is_dir($path)) {
             $path .= DIRECTORY_SEPARATOR;
@@ -272,7 +284,7 @@ class Helper
      *
      * @return void
      */
-    public static function confBackup()
+    public static function confBackup(): void
     {
         if (!is_file(CONF . '.bak') && is_file(CONF)) {
             rename(CONF, CONF . '.bak');
@@ -287,7 +299,7 @@ class Helper
      *
      * @return void
      */
-    public static function confRestore()
+    public static function confRestore(): void
     {
         if (is_file(CONF . '.bak')) {
             rename(CONF . '.bak', CONF);
@@ -303,7 +315,7 @@ class Helper
      * @param string $pathToFile
      * @param array $values
      */
-    public static function createIniFile($pathToFile, array $values)
+    public static function createIniFile($pathToFile, array $values): void
     {
         if (count($values)) {
             @unlink($pathToFile);
@@ -346,7 +358,7 @@ class Helper
      * @param bool $return
      * @return void|string
      */
-    public static function varExportMin($var, $return = false)
+    public static function varExportMin($var, $return = false): string
     {
         if (is_array($var)) {
             $toImplode = array();
@@ -369,44 +381,35 @@ class Helper
      *
      * @return void
      */
-    public static function updateSubresourceIntegrity()
+    public static function updateSubresourceIntegrity(): void
     {
-        $dir = dir(PATH . 'js');
-        while (false !== ($file = $dir->read())) {
-            if (substr($file, -3) === '.js') {
-                self::$hashes[$file] = base64_encode(
-                    hash('sha512', file_get_contents(
-                        PATH . 'js' . DIRECTORY_SEPARATOR . $file
-                    ), true)
-                );
+        foreach (new GlobIterator(PATH . 'js' . DIRECTORY_SEPARATOR . '*.js') as $file) {
+            if ($file->getBasename() == 'common.js') {
+                continue; // ignore JS unit test bootstrap
             }
+            self::$hashes[$file->getBasename()] = base64_encode(
+                hash('sha512', file_get_contents($file->getPathname()), true)
+            );
         }
 
-        $dir = dir(PATH . 'tpl');
-        while (false !== ($file = $dir->read())) {
-            if (substr($file, -4) === '.php') {
-                $content = file_get_contents(
-                    PATH . 'tpl' . DIRECTORY_SEPARATOR . $file
-                );
-                $content = preg_replace_callback(
-                    '#<script ([^>]+) src="js/([a-z0-9.-]+.js)([^"]*)"( integrity="[^"]+" crossorigin="[^"]+")?></script>#',
-                    function ($matches) {
-                        if (array_key_exists($matches[2], Helper::$hashes)) {
-                            return '<script ' . $matches[1] . ' src="js/' .
-                                $matches[2] . $matches[3] .
-                                '" integrity="sha512-' . Helper::$hashes[$matches[2]] .
-                                '" crossorigin="anonymous"></script>';
-                        } else {
-                            return $matches[0];
-                        }
-                    },
-                    $content
-                );
-                file_put_contents(
-                    PATH . 'tpl' . DIRECTORY_SEPARATOR . $file,
-                    $content
-                );
-            }
+        $counter = 0;
+        $file    = PATH . 'lib' . DIRECTORY_SEPARATOR . 'Configuration.php';
+        $content = preg_replace_callback(
+            '#\'js/([a-z0-9.-]+.js)(\' +)=\> \'[^\']*\',#',
+            function ($matches) use (&$counter) {
+                if (array_key_exists($matches[1], Helper::$hashes)) {
+                    ++$counter;
+                    return '\'js/' . $matches[1] . $matches[2] .
+                        '=> \'sha512-' . Helper::$hashes[$matches[1]] . '\',';
+                } else {
+                    throw new Exception('SRI hash for file js/' . $matches[1] . ' not found, please add the missing file or remove it from lib/Configuration.php.');
+                }
+            },
+            file_get_contents($file)
+        );
+        file_put_contents($file, $content);
+        if ($counter != count(self::$hashes)) {
+            throw new Exception('Mismatch between ' . count(self::$hashes) . ' found js files and ' . $counter . ' SRI hashes in lib/Configuration.php, please update lib/Configuration.php to match the list of js files.');
         }
     }
 }
@@ -760,6 +763,11 @@ class ConnectionInterfaceStub implements ConnectionInterface
         throw new BadMethodCallException('not supported by this stub');
     }
 
+    public function restoreBucket(array $args = array())
+    {
+        throw new BadMethodCallException('not supported by this stub');
+    }
+
     public function getBucket(array $args = array())
     {
         throw new BadMethodCallException('not supported by this stub');
@@ -916,11 +924,10 @@ class StorageClientStub extends StorageClient
         $this->_connection =  new ConnectionInterfaceStub();
     }
 
-    public function bucket($name, $userProject = false)
+    public function bucket($name, $userProject = false, array $config = array())
     {
         if (!key_exists($name, self::$_buckets)) {
-            $b                     = new BucketStub($this->_connection, $name, array(), $this);
-            self::$_buckets[$name] = $b;
+            self::$_buckets[$name] = new BucketStub($this->_connection, $name, array(), $this);
         }
         return self::$_buckets[$name];
     }
